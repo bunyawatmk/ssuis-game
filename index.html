@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมจับคู่ S. suis พิชิตโรค - 5 ด่าน (One Health & AMR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+        body{font-family:'Sarabun',sans-serif;background-image:url('https://cdn.jsdelivr.net/gh/bunyawatmk/picture/Gemini_Generated_Image_daytzzdaytzzdayt.png');background-size:cover;background-position:center;background-attachment:fixed;background-color:#f0fdf4;overscroll-behavior-y:contain}
+        header{background-color:white;padding:1rem;border-radius:1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+        .card-container{perspective:1000px}
+        .card{position:relative;transform-style:preserve-3d;transition:transform 0.5s;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+        .card.flipped{transform:rotateY(180deg)}
+        .card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border-radius:0.75rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);padding:0.5rem;text-align:center}
+        .card-front{background:linear-gradient(135deg,#34d399 0%,#059669 100%);color:white;font-size:2rem}
+        .card-back{background-color:white;transform:rotateY(180deg);border:2px solid #059669;color:#064e3b;font-weight:bold;display:flex;flex-direction:column;justify-content:center}
+        .text-content{font-size:0.85rem;line-height:1.3}
+        @media(max-width:640px){.text-content{font-size:0.7rem}}
+        .matched{animation:pulse 0.5s ease-in-out}
+        @keyframes pulse{0%{transform:scale(1) rotateY(180deg)}50%{transform:scale(1.1) rotateY(180deg)}100%{transform:scale(1) rotateY(180deg)}}
+        .level-dot{transition:all 0.3s ease;width:2rem;height:2rem;min-width:2rem}
+        .level-dot.active{background-color:#059669;color:white;border-color:#059669;transform:scale(1.1)}
+        .level-dot.completed{background-color:#34d399;color:white;border-color:#34d399}
+        .level-line{height:4px;flex-grow:1;background-color:#e5e7eb;margin:0 4px;border-radius:2px}
+        .level-line.filled{background-color:#34d399}
+        .ai-pulse{animation:ai-glow 2s infinite}
+        @keyframes ai-glow{0%{box-shadow:0 0 5px #a7f3d0}50%{box-shadow:0 0 15px #34d399}100%{box-shadow:0 0 5px #a7f3d0}}
+        .typing-loader::after{content:'...';animation:typing 1.5s steps(4,end) infinite}
+        @keyframes typing{0%,100%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-6 px-4 pb-24">
+    <div id="welcome-screen" class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 mt-4 text-center">
+        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-globe-asia text-5xl text-green-600"></i>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-green-800 mb-2">S. suis พิชิตโรค</h1>
+        <p class="text-gray-500 mb-4">เกมเรียนรู้โรคหูดับ เชื้อดื้อยา และมิติทางเพศสภาพ (One Health)</p>
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-50 via-blue-50 to-white border border-indigo-100 p-5 mb-8 shadow-sm group hover:shadow-md transition-shadow">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 to-blue-500"></div>
+            <div class="flex items-center justify-center mb-3">
+                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center shadow-sm">
+                    <i class="fas fa-microscope mr-2"></i>Research Project
+                </span>
+            </div>
+            <p class="text-gray-700 text-sm md:text-base font-medium leading-relaxed text-center px-2">
+                Novel vaccine design as an alternative to antimicrobial use for preventing and controlling the swine and zoonotic agent <em class="font-bold text-indigo-900">Streptococcus suis</em>
+            </p>
+        </div>
+        <div class="bg-green-50 rounded-xl p-6 mb-8 text-left border border-green-200">
+            <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                <i class="fas fa-gamepad mr-2 text-green-600"></i> วิธีการเล่นเบื้องต้น
+            </h2>
+            <ul class="space-y-3 text-gray-700 text-sm md:text-base">
+                <li class="flex items-start"><i class="fas fa-bullseye text-red-500 mt-1 mr-2 w-5"></i><span><strong>เป้าหมาย:</strong> จับคู่การ์ดให้ครบทั้ง 5 ด่านที่ครอบคลุมเนื้อหาทั้งด้านเชื้อโรค สังคม และพฤติกรรม</span></li>
+                <li class="flex items-start"><i class="fas fa-hand-pointer text-blue-500 mt-1 mr-2 w-5"></i><span><strong>การจับคู่:</strong> หาคู่ความสัมพันธ์ระหว่าง <span class="text-orange-600 font-bold">การ์ดคำถาม (สีส้ม)</span> และ <span class="text-green-600 font-bold">การ์ดคำตอบ (สีเขียว)</span></span></li>
+                <li class="flex items-start"><i class="fas fa-robot text-purple-500 mt-1 mr-2 w-5"></i><span><strong>AI Corner:</strong> เกร็ดความรู้จากพี่ AI จะเด้งขึ้นมาอธิบายเรื่องราวเบื้องหลังเมื่อจับคู่ถูกต้อง</span></li>
+            </ul>
+        </div>
+        <button onclick="onStartGame()" class="bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 w-full md:w-auto">
+            <i class="fas fa-play mr-2"></i> เริ่มเกมเลย!
+        </button>
+    </div>
+    <div id="game-container" class="w-full flex flex-col items-center hidden">
+        <header class="w-full max-w-4xl mb-6">
+            <div class="flex justify-between items-end mb-4">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-green-800"><i class="fas fa-bacteria mr-2"></i>S. suis พิชิตโรค</h1>
+                    <p id="level-title" class="text-green-600 text-sm md:text-base font-medium mt-1">ด่านที่ 1: พื้นฐานเชื้อและการระบาด</p>
+                </div>
+                <div class="flex gap-3 text-sm font-bold text-gray-700">
+                    <button onclick="openMultiplayerModal()" id="btn-multiplayer" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full shadow-sm border border-blue-200 flex items-center transition-colors">
+                        <i class="fas fa-users mr-2"></i> <span id="multiplayer-status">เล่นกับเพื่อน</span>
+                    </button>
+                    <div class="bg-white px-3 py-1 rounded-full shadow-sm border border-green-100 flex items-center"><i class="fas fa-stopwatch mr-2 text-blue-500"></i><span id="time">00:00</span></div>
+                    <div class="bg-white px-3 py-1 rounded-full shadow-sm border border-green-100 flex items-center"><i class="fas fa-star mr-2 text-yellow-500"></i><span id="moves">0</span></div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between px-2 overflow-x-auto pb-2">
+                <div class="level-dot rounded-full border-2 border-gray-300 flex items-center justify-center font-bold text-gray-400 text-sm active" id="dot-1">1</div>
+                <div class="level-line" id="line-1"></div>
+                <div class="level-dot rounded-full border-2 border-gray-300 flex items-center justify-center font-bold text-gray-400 text-sm" id="dot-2">2</div>
+                <div class="level-line" id="line-2"></div>
+                <div class="level-dot rounded-full border-2 border-gray-300 flex items-center justify-center font-bold text-gray-400 text-sm" id="dot-3">3</div>
+                <div class="level-line" id="line-3"></div>
+                <div class="level-dot rounded-full border-2 border-gray-300 flex items-center justify-center font-bold text-gray-400 text-sm" id="dot-4">4</div>
+                <div class="level-line" id="line-4"></div>
+                <div class="level-dot rounded-full border-2 border-gray-300 flex items-center justify-center font-bold text-gray-400 text-sm" id="dot-5">5</div>
+            </div>
+        </header>
+        <div id="game-board" class="grid w-full max-w-4xl mx-auto transition-all duration-300 mb-8"></div>
+        <div id="ai-corner" class="w-full max-w-4xl bg-white rounded-xl shadow-lg border border-green-200 overflow-hidden hidden transition-all duration-500 mt-8">
+            <div class="bg-gradient-to-r from-green-100 to-emerald-50 p-3 border-b border-green-200 flex justify-between items-center">
+                <h3 class="font-bold text-green-800 flex items-center"><i class="fas fa-sparkles text-yellow-500 mr-2"></i>เกร็ดความรู้จากพี่ AI</h3>
+                <span class="text-xs text-green-600 bg-white px-2 py-1 rounded-full border border-green-100">Powered by Gemini</span>
+            </div>
+            <div class="p-4">
+                <div id="ai-loading" class="hidden text-green-600 italic"><i class="fas fa-robot mr-2 animate-bounce"></i> กำลังเรียบเรียงความรู้<span class="typing-loader"></span></div>
+                <div id="ai-content" class="hidden">
+                    <p id="ai-text" class="text-gray-700 leading-relaxed mb-3"></p>
+                    <button onclick="playAIAudio()" id="btn-play-audio" class="text-sm bg-green-100 hover:bg-green-200 text-green-700 py-1 px-3 rounded-full transition-colors flex items-center w-max"><i class="fas fa-volume-up mr-2"></i> ฟังอีกครั้ง</button>
+                    <div id="audio-loading" class="hidden text-xs text-green-600 mt-1"><i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังสร้างเสียง...</div>
+                </div>
+                <div id="ai-empty" class="text-gray-400 text-center py-2 text-sm italic">จับคู่ให้ถูกต้องเพื่อปลดล็อกเกร็ดความรู้!</div>
+            </div>
+        </div>
+        <div class="w-full max-w-4xl flex flex-col items-center mt-8 mb-6">
+            <button onclick="toggleKnowledgeBox()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center"><i class="fas fa-book-open mr-2"></i> คลังความรู้ One Health</button>
+            <div id="manual-knowledge-box" class="w-full mt-4 bg-gray-50 rounded-xl shadow-lg border border-indigo-200 hidden transition-all duration-300">
+                <div class="p-6">
+                    <header class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-indigo-900 mb-2">Knowledge Hub: สุขภาพสัตว์และสังคม</h2>
+                        <p class="text-gray-600 text-sm">รวบรวมองค์ความรู้เชื้อดื้อยา โรคสำคัญ และความเสมอภาค</p>
+                    </header>
+                    <div class="flex flex-col md:flex-row rounded-lg bg-gray-200 p-1 mb-6 shadow-inner gap-1">
+                        <button onclick="switchTab('antibiotics')" id="tab-antibiotics" class="flex-1 py-3 px-4 rounded-md text-sm font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-sm">นวัตกรรมทดแทนยา</button>
+                        <button onclick="switchTab('ssuis')" id="tab-ssuis" class="flex-1 py-3 px-4 rounded-md text-sm font-semibold transition-all duration-200 text-gray-600 hover:text-gray-800">โรคหูดับ (S. suis)</button>
+                        <button onclick="switchTab('gender_amr')" id="tab-gender" class="flex-1 py-3 px-4 rounded-md text-sm font-semibold transition-all duration-200 text-gray-600 hover:text-gray-800">มิติทางเพศ & AMR</button>
+                    </div>
+                    <div id="section-header" class="mb-6 text-center">
+                        <h2 class="text-lg font-bold text-gray-800 mb-1" id="section-title">นวัตกรรมลดการใช้ยาปฏิชีวนะ</h2>
+                        <p class="text-gray-500 text-sm" id="section-subtitle">แนวทางเลือกใหม่เพื่อความยั่งยืนในอุตสาหกรรมปศุสัตว์</p>
+                    </div>
+                    <div id="accordion-container" class="space-y-2"></div>
+                    <footer class="mt-8 text-center text-gray-500 text-xs">
+                        <p class="font-medium text-gray-600 mb-1">Project: Novel vaccine design as an alternative to antimicrobial use for preventing and controlling the swine and zoonotic agent Streptococcus suis</p>
+                        <p>© 2024 Livestock Health Knowledge Base. Based on One Health Concept.</p>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="level-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform scale-100 animate-bounce-short">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-check text-3xl text-green-600"></i></div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">ผ่านด่าน <span id="modal-level-num">1</span>!</h2>
+            <p class="text-gray-600 mb-4" id="modal-msg">เยี่ยมมาก! พร้อมสำหรับความท้าทายต่อไปหรือยัง?</p>
+            <div class="flex justify-center gap-4 mb-6 text-sm">
+                <div class="text-gray-500"><i class="fas fa-clock mr-1"></i> <span id="level-time">00:00</span></div>
+                <div class="text-gray-500"><i class="fas fa-hand-pointer mr-1"></i> <span id="level-moves">0</span> ครั้ง</div>
+            </div>
+            <button onclick="nextLevel()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 flex items-center justify-center">ไปด่านถัดไป <i class="fas fa-arrow-right ml-2"></i></button>
+        </div>
+    </div>
+    <div id="victory-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-md">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500"></div>
+            <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-trophy text-4xl text-yellow-600"></i></div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">One Health Hero!</h2>
+            <p class="text-gray-600 mb-6">คุณคือผู้เชี่ยวชาญตัวจริง! เข้าใจลึกซึ้งทั้งโรคระบาด สังคม และเชื้อดื้อยา</p>
+            <div class="bg-gray-50 p-4 rounded-xl mb-6"><p class="text-sm text-gray-500 mb-1">เวลารวมทั้งหมด</p><p class="text-2xl font-bold text-green-600" id="total-time">00:00</p></div>
+            <button onclick="restartGame()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl transition duration-300"><i class="fas fa-redo mr-2"></i> เล่นใหม่อีกครั้ง</button>
+        </div>
+    </div>
+    <div id="multiplayer-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full mx-4">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i class="fas fa-wifi text-blue-500 mr-2"></i> เชื่อมต่อเล่นกับเพื่อน</h2>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">ชื่อห้อง (Room ID)</label>
+                <input type="text" id="room-id-input" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="เช่น room123">
+                <p class="text-xs text-gray-500 mt-1">เพื่อนต้องใส่ชื่อห้องเดียวกัน</p>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('multiplayer-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">ยกเลิก</button>
+                <button onclick="connectMQTT()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">เชื่อมต่อ</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
