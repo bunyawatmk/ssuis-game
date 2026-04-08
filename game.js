@@ -1,5 +1,3 @@
-const apiKey = "AIzaSyBBqJqIg6CTShy1mvyD22N9ynaMKGmFeoM";
-
 const levelsData = [
     {
         title: "ด่านที่ 1: พื้นฐานเชื้อและการระบาด",
@@ -84,7 +82,6 @@ let seconds = 0;
 let totalSeconds = 0;
 let gameStarted = false;
 let currentExplanation = "";
-let currentAudio = null;
 
 let mqttClient;
 let isMultiplayer = false;
@@ -106,7 +103,6 @@ const aiLoading = document.getElementById('ai-loading');
 const aiContent = document.getElementById('ai-content');
 const aiText = document.getElementById('ai-text');
 const aiEmpty = document.getElementById('ai-empty');
-const audioLoading = document.getElementById('audio-loading');
 
 function onStartGame() {
     Swal.fire({
@@ -345,7 +341,6 @@ async function fetchAIExplanation(term1, term2, pairId) {
         currentExplanation = fallbackText + " (ใช้ข้อมูลสำรองเนื่องจากต่อ AI ไม่ได้)";
     }
     displayAIResult(currentExplanation);
-    playAIAudio();
 }
 
 function displayAIResult(text) {
@@ -353,78 +348,6 @@ function displayAIResult(text) {
     aiCorner.classList.remove('ai-pulse');
     aiContent.classList.remove('hidden');
     aiText.innerText = text;
-}
-
-async function playAIAudio() {
-    if (!currentExplanation) return;
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-    window.speechSynthesis.cancel();
-    const btn = document.getElementById('btn-play-audio');
-    const loading = document.getElementById('audio-loading');
-    btn.disabled = true;
-    btn.classList.add('opacity-50');
-    loading.classList.remove('hidden');
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: "Say cheerfully, enthusiastically, and engagingly like a fun podcaster: " + currentExplanation }] }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } } }
-                }
-            })
-        });
-        if (!response.ok) throw new Error('TTS API Error');
-        const data = await response.json();
-        const audioBase64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        if (audioBase64) {
-            const binaryString = atob(audioBase64);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) { bytes[i] = binaryString.charCodeAt(i); }
-            const wavBytes = pcm16ToWav(bytes, 24000);
-            const blob = new Blob([wavBytes], { type: 'audio/wav' });
-            const audioUrl = URL.createObjectURL(blob);
-            currentAudio = new Audio(audioUrl);
-            currentAudio.play();
-            currentAudio.onended = () => { btn.disabled = false; btn.classList.remove('opacity-50'); };
-        } else { throw new Error("No audio data"); }
-    } catch (e) {
-        console.error("TTS Error:", e);
-        const utterance = new SpeechSynthesisUtterance(currentExplanation);
-        utterance.lang = 'th-TH';
-        speechSynthesis.speak(utterance);
-        btn.disabled = false;
-        btn.classList.remove('opacity-50');
-    } finally { loading.classList.add('hidden'); }
-}
-
-function pcm16ToWav(pcmData, sampleRate) {
-    const numChannels = 1;
-    const bitsPerSample = 16;
-    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
-    const blockAlign = numChannels * bitsPerSample / 8;
-    const wavHeader = new ArrayBuffer(44);
-    const view = new DataView(wavHeader);
-    const writeString = (view, offset, string) => { for (let i = 0; i < string.length; i++) { view.setUint8(offset + i, string.charCodeAt(i)); } };
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + pcmData.length, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, byteRate, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitsPerSample, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, pcmData.length, true);
-    const wavBody = new Uint8Array(wavHeader.byteLength + pcmData.length);
-    wavBody.set(new Uint8Array(wavHeader), 0);
-    wavBody.set(pcmData, wavHeader.byteLength);
-    return wavBody;
 }
 
 const knowledgeData = {
