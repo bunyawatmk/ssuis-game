@@ -466,7 +466,6 @@
 <body>
 <div class="page-wrap">
 
-    <!-- ===== WELCOME SCREEN ===== -->
     <div id="welcome-screen" class="glass-white fade-in">
         <div class="hero-icon">
             <i class="fas fa-dna text-white" style="font-size:2.4rem"></i>
@@ -479,7 +478,6 @@
             One Health · AMR · Gender Equity · 5 ด่าน
         </div>
 
-        <!-- Research Label -->
         <div class="research-box mb-6">
             <span class="inline-flex items-center bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full mb-2">
                 <i class="fas fa-microscope mr-1.5"></i> Research Project
@@ -489,7 +487,6 @@
             </p>
         </div>
 
-        <!-- How to Play -->
         <div class="how-to-box">
             <h2 class="text-base font-bold text-green-800 mb-3 flex items-center">
                 <i class="fas fa-gamepad mr-2 text-green-600"></i> วิธีการเล่น
@@ -521,10 +518,8 @@
         </button>
     </div>
 
-    <!-- ===== GAME CONTAINER ===== -->
     <div id="game-container" class="w-full flex flex-col items-center hidden" style="max-width:900px;">
 
-        <!-- Header -->
         <div id="game-header" class="glass-white w-full fade-in">
             <div class="header-top">
                 <div>
@@ -544,7 +539,6 @@
                 </div>
             </div>
 
-            <!-- Level dots -->
             <div class="level-track">
                 <div class="level-dot active" id="dot-1">1</div>
                 <div class="level-line" id="line-1"></div>
@@ -558,10 +552,8 @@
             </div>
         </div>
 
-        <!-- Game Board -->
         <div id="game-board" class="grid w-full transition-all duration-300 mb-2 mt-1 px-0"></div>
 
-        <!-- AI Corner -->
         <div id="ai-corner" class="hidden fade-in" style="width:100%;max-width:900px;">
             <div class="ai-header">
                 <h3 class="font-bold text-white flex items-center text-sm">
@@ -577,13 +569,6 @@
                 </div>
                 <div id="ai-content" class="hidden">
                     <p id="ai-text" class="text-gray-700 leading-relaxed mb-3 text-sm"></p>
-                    <button onclick="playAIAudio()" id="btn-play-audio"
-                        class="text-sm bg-green-100 hover:bg-green-200 text-green-800 py-1.5 px-4 rounded-full transition-colors flex items-center gap-2 w-max font-semibold">
-                        <i class="fas fa-volume-up"></i> ฟังอีกครั้ง
-                    </button>
-                    <div id="audio-loading" class="hidden text-xs text-green-600 mt-1.5">
-                        <i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังสร้างเสียง...
-                    </div>
                 </div>
                 <div id="ai-empty" class="text-gray-400 text-center py-2 text-sm italic">
                     🃏 จับคู่ให้ถูกต้องเพื่อปลดล็อกเกร็ดความรู้!
@@ -591,7 +576,6 @@
             </div>
         </div>
 
-        <!-- Knowledge Box -->
         <div class="w-full flex flex-col items-center mt-5 mb-4" style="max-width:900px;">
             <button onclick="toggleKnowledgeBox()" class="knowledge-btn">
                 <i class="fas fa-book-open mr-2"></i> คลังความรู้ One Health
@@ -633,10 +617,7 @@
                 </div>
             </div>
         </div>
-    </div><!-- end game-container -->
-
-    <!-- ===== LEVEL COMPLETE MODAL ===== -->
-    <div id="level-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+    </div><div id="level-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm">
         <div class="modal-card fade-in">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-t-2xl"></div>
             <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -665,7 +646,6 @@
         </div>
     </div>
 
-    <!-- ===== VICTORY MODAL ===== -->
     <div id="victory-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-md">
         <div class="modal-card fade-in">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-t-2xl"></div>
@@ -686,7 +666,6 @@
         </div>
     </div>
 
-    <!-- ===== MULTIPLAYER MODAL ===== -->
     <div id="multiplayer-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm">
         <div class="modal-card text-left fade-in">
             <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
@@ -706,9 +685,7 @@
         </div>
     </div>
 
-</div><!-- end page-wrap -->
-
-<script src="https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt.min.js"></script>
+</div><script src="https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt.min.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
